@@ -1,28 +1,38 @@
-import os
+import streamlit as st
 from groq import Groq
-from dotenv import load_dotenv
 
-load_dotenv()
-
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# Initialize Groq client using Streamlit secrets
+client = Groq(
+    api_key=st.secrets["GROQ_API_KEY"]
+)
 
 def generate_answer(context, question):
 
     prompt = f"""
-    Answer the question using the context below.
+You are an AI assistant that answers questions using the provided document context.
 
-    Context:
-    {context}
+If the answer is not present in the context, say:
+"I could not find the answer in the uploaded document."
 
-    Question:
-    {question}
-    """
+Context:
+{context}
+
+Question:
+{question}
+
+Answer clearly and concisely.
+"""
 
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
-            {"role": "user", "content": prompt}
-        ]
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.3,
+        max_tokens=500
     )
 
     return response.choices[0].message.content
